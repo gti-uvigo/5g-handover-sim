@@ -1,0 +1,25 @@
+# Scenario definition file
+
+# Scenario dimensions 
+# MinX MaxX MinY MaxY
+!-400 400 -200 200
+
+# Bands data
+# * Band_ID Central_Frequency_Hz User_Bandwidth_Hz GNB_Bandwidth_Hz
+*0 3.5e9 20e6 400e6
+*1 28e9 100e6 400e6
+
+# gNodeB Data for Micro Line (Band 1)
+# Format: GNB_ID Position_X Position_Y Position_Z Band_ID Transmission_Power_dBm gNB_Type
+0 -200.0 50.0 3.0 1 23.0 I
+1 -200 -50.0 3.0 1 23.0 I
+2 0.0 50.0 3.0 1 23.0 I
+3 0.0 -50.0 3.0 1 23.0 I
+4 200.0 50.0 3.0 1 23.0 I
+5 200 -50.0 3.0 1 23.0 I
+
+# gNodeB Data for Macro Line (Band 0)
+# Format: GNB_ID Position_X Position_Y Position_Z Band_ID Transmission_Power_dBm gNB_Type
+6 0 150.0 20.0 0 53.0 H
+7 0 -150.0 20.0 0 53.0 H
+

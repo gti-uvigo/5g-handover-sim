@@ -1,0 +1,10 @@
+version: '3'
+
+services:
+  simulator:
+    build: 
+      context: .
+      dockerfile: dockerfile
+    volumes:
+      - ./:/app/
+    command: bash
