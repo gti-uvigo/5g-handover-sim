@@ -1,5 +1,4 @@
-# End-to-End 5G HetNet Simulator with arbitrary handover algorithms
-
+# End-to-end Handover Simulator for 5G Heterogeneous Network Enviroments
 
 
 This repository contains a 5G HetNet Simulator designed to evaluate the performance of various handover algorithms in heterogeneous network environments. The simulator is built on top of the ns-3 network simulator and leverages the 5G-LENA module for realistic end-to-end network simulations. 
