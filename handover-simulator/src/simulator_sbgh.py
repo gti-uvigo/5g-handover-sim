@@ -1,3 +1,6 @@
+
+
+
 #usr/bin/env python3
 #encoding: utf-8
 
@@ -23,8 +26,8 @@ SCORE_THRESHOLD = 1.25
 HANDOVER_INTERVAL = 100 # The interval for the handover calculation, in multiples of the t_interval
 
 
-def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=None ,scenario=None, alpha=float, beta=float,delay = 0,penalty_dict=None):
-    """Simulate the SBGH handover algorithm for the UEs.
+def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=None ,scenario=None, alpha=float, beta=float,delay = 0,penalty_dict=None,penalty_time=float):
+    """Simulate the SBGH/GTI handover algorithm for the UEs.
 
     Args:
         nUEs (int): The number of UEs.
@@ -32,6 +35,11 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
         simDataframes (list): A list of lists of dataframes.
         intervals (list): A list of intervals.
         scenario (dict): The scenario data.
+        alpha (float): The alpha parameter for the score calculation.
+        beta (float): The beta parameter for the score calculation.
+        delay (int): The delay in intervals for the handover decision.
+        penalty_dict (dict): A dictionary containing the penalty values for each gNB.
+        penalty_time (float): The penalty time for the handover, the time the connection gets degraded after each handover.
 
     Returns:
         list: A list of dataframes containing the simulation results.
@@ -46,9 +54,11 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
     # create a structure to store the UEs connected to each gNB
     connected_ues = {}
     ues_connected_gnbs = [-1] * nUEs
+    handover_flag = False
     
         
     timers = [0] * nUEs  
+    penalty_timers = [0] * nUEs  
     # create the value Remaining bandwidth for each gNB
     for gnb in gnbs:
         # create a list of connected UEs for each gNB
@@ -109,7 +119,7 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
             position = None
             sysTime = None
             
-            # if the UE is already connected to a gNB, calulate if the interval is a handover interval (index % HANDOVER_INTERVAL == 0)
+            # if the UE is already connected to a gNB, calculate if the interval is a handover interval (index % HANDOVER_INTERVAL == 0)
             # - if so calculate the score for the gNBs
             # - if not, continue with the current gNB
             # if the UE is not connected to a gNB, calculate the score for the gNBs
@@ -131,7 +141,7 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
                     scores.append({"GNB_ID": file_id, "score": score})
                 scores = sorted(scores, key=lambda x: x["score"], reverse=True)
                 interval_scores.append(scores)
-                # Candidate criterium: the gNB has a positive score and the gNB has enough bandwidth for the UE considering  a ideal scenario
+                # Candidate criteria: the gNB has a positive score and the gNB has enough bandwidth for the UE considering a ideal scenario
                 
                 for score in scores:
                     gnb = gnbs[score["GNB_ID"]]
@@ -181,8 +191,8 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
                             if best_scores["score"] > SCORE_THRESHOLD * connected_scores["score"]:
                                 # it is a better candidate than the current gNB, initiate the handover
                                 connected_gnb_id = best_candidate
-                                timers[user] = HANDOVER_INTERVAL
                                 handovers += 1
+                                penalty_timers[user] = penalty_time
                                 
                             
             
@@ -191,6 +201,10 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
             if connected_gnb_id is not None:
                 connected_gnb = get_gnb_data(connected_gnb_id,dataframes, delay_index)
                 connected_gnb_delay = get_gnb_data(connected_gnb_id,dataframes, index)
+                if penalty_timers[user] > 0:
+                    # apply the penalty
+                    apply_penalty(connected_gnb_delay, penalty_dict, penalty_timers[user], interval)
+                    penalty_timers[user] -= interval
             else:
                 connected_gnb = None
                 connected_gnb_delay = None
@@ -198,7 +212,7 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
             for gnb in gnbs:
                 for band in bands:
                     if band['Band_ID'] == gnb['Band_ID']:
-                        # mumber of UEs connected to the gNB
+                        # number of UEs connected to the gNB
                         # 1 if the UE is connected to the gNB, 0 otherwise for each y = ues_connected_gnbs[user] == gnb["GNB_ID"]
                         # the sum of the y values is the number of UEs connected to the gNB
                         connected_ues_count = sum([1 for y in ues_connected_gnbs if y == gnb["GNB_ID"]])
@@ -253,10 +267,8 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
                 "Rsrp": rsrp,
                 "UE Position": position,
                 "Handovers": handovers,
-                #"System Time": sysTime
             }
             results[user].append(interval_metrics)
-            #results_score[user].append(interval_scores[user])
     for user in range(nUEs):
         results[user] = pd.DataFrame(results[user])
         # calculate the adding the Diff values per each interval
@@ -264,13 +276,11 @@ def simulate_sbgh_users(nUEs=int ,simDataframes=None ,intervals=None, interval=N
         results[user]["TxPacketsAcc"] = results[user]["TxPacketsDiff"].cumsum()
         results[user]["RxBytesAcc"] = results[user]["RxBytesDiff"].cumsum()
         results[user]["RxPacketsAcc"] = results[user]["RxPacketsDiff"].cumsum()
-        #results_score[user] = pd.DataFrame(results_score[user])            
-    #return results,results_score
     return results,results_score
 
 
-def simulate_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int, interval=float ,simDataframes=None ,intervals=None ,scenario=None, packetSize=int, alpha=float, beta=float, penalty_dict=None):
-        """Simulate the propossed handover algorithm.
+def simulate_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int, interval=float ,simDataframes=None ,intervals=None ,scenario=None, packetSize=int, alpha=float, beta=float, penalty_dict=None, penalty_time=float):
+        """Simulate the proposed SBGH handover algorithm.
 
         Args:
         
@@ -283,11 +293,16 @@ def simulate_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=i
             intervals (list): A list of intervals.
             scenario (dict): The scenario data.
             packetSize (int): The packet size.
+            alpha (float): The alpha parameter for the score calculation.
+            beta (float): The beta parameter for the score calculation.
+            penalty_dict (dict): A dictionary containing the penalty values for each gNB.
+            penalty_time (float): The penalty time for the handover, the time the connection gets degraded after each handover.
+            
         
         Returns:
             None
         """
-        ue_results, score_results = simulate_sbgh_users(nUEs ,simDataframes ,intervals,interval,scenario,alpha, beta, delay = 1, penalty_dict=penalty_dict)
+        ue_results, score_results = simulate_sbgh_users(nUEs ,simDataframes ,intervals,interval,scenario,alpha, beta, delay = 1, penalty_dict=penalty_dict, penalty_time=penalty_time)
         results_folder = os.path.join(traces_sim_folder, "results")
         if not os.path.isdir(results_folder):
             os.mkdir(results_folder)
@@ -306,11 +321,6 @@ def simulate_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=i
         for user in range(nUEs):
             print_progress(user+1, nUEs, prefix = 'Ideal UE Simulation Progress:', suffix = 'Complete')
             results = ue_results[user]
-            #results_score = ue_results_score[user]
-            # save the scores in a file
-            #results_score_file = os.path.join(scores_folder, f"UE-{user}.csv")
-            #results_score.to_csv(results_score_file, index=False)
-            # save the results in a file
             results_file = os.path.join(ue_results_folder, f"UE-{user}.csv")
             results.to_csv(results_file, index=False)
 
@@ -366,7 +376,6 @@ def simulate_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=i
             'Handovers': 'sum',
         })
 
-        meanThroughput = gnbs_metrics['Throughput'] / nGnbs
         gnbs_metrics['MeanThroughput'] = gnbs_metrics['Throughput'] / nGnbs
         
         logging.info("Saving the results")
@@ -386,7 +395,7 @@ def simulate_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=i
             file.write(str(int(score)))
 
 
-def simulate_ideal_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int, interval=float ,simDataframes=None ,intervals=None ,scenario=None, packetSize=int, alpha=float, beta=float, penalty_dict=None):
+def simulate_ideal_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int, interval=float ,simDataframes=None ,intervals=None ,scenario=None, packetSize=int, alpha=float, beta=float, penalty_dict=None, penalty_time=float):
         """Simulate the propossed handover algorithm.
 
         Args:
@@ -404,7 +413,7 @@ def simulate_ideal_sbgh_handover(nUEs=False,debug=False,traces_sim_folder=str, n
         Returns:
             None
         """
-        ue_results,ue_results_score = simulate_sbgh_users(nUEs ,simDataframes ,intervals,interval ,scenario,alpha, beta, delay = 0, penalty_dict=penalty_dict)
+        ue_results,ue_results_score = simulate_sbgh_users(nUEs ,simDataframes ,intervals,interval ,scenario,alpha, beta, delay = 0, penalty_dict=penalty_dict, penalty_time=penalty_time)
         results_folder = os.path.join(traces_sim_folder, "results")
         if not os.path.isdir(results_folder):
             os.mkdir(results_folder)

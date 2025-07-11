@@ -39,7 +39,6 @@ def simulate_gnb(gnb, intervals, nUEs, ueResults_df, scenario=None, packetSize=i
             channel_delay = latency_sum / connectedUEs
             sim_packet_loss = calculate_lost_packets(occupation, rx_packets_diff_sum)
             total_packet_loss = sim_packet_loss + channel_packet_loss
-            # percentage_packet_loss = total_packet_loss / tx_packets_diff_sum
             interval_data_aggregated = {
                 "Time": interval,
                 "Throughput": throughput_sum,
@@ -84,7 +83,6 @@ def simulate_gnb(gnb, intervals, nUEs, ueResults_df, scenario=None, packetSize=i
                 "SimLatency": 0,
                 "PLostPackets": 0,
                 "Handovers": 0,
-                "MOS": 0,
             })
         
     # calculate the accumulated values
@@ -122,11 +120,8 @@ def simulate_user_restricted(ueResults_df, gnbResults_list, ue, intervals, packe
         # Check if the value is null or NaN
         if pd.isna(gnb) or pd.isnull(gnb):
             ue_interval_data = ue_interval_data.copy()
-            # Add the additional data to the results DataFrame
-            # offeredRate,GnbCapacity,ChannelDelay,LostPacketswithSim,PLostPackets,MOS,SimLatency
             ue_interval_data["Latency"] = 0
             ue_interval_data['PLostPackets'] = 0
-            ue_interval_data['MOS'] = 0
             ue_interval_data['SimLatency'] = 0
 
             results.append(ue_interval_data)

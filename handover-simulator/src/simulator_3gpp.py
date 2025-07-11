@@ -14,7 +14,7 @@ import logging
 import logging.config
 from nrEvents import *
 ALGORITHM = "3GPP_A3"
-def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offset=float, NrMeasureInt=float, interval=float, DECISION_PARAMETER=str, TTT=float, penalty_time=float, bands=None, packetSize=int):
+def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offset=float, NrMeasureInt=float, interval=float, DECISION_PARAMETER=str, TTT=float, penalty_time=float, bands=None, packetSize=int, penalty_dict=None):
     logging.info(f"Simulating UE {user}")
     ueResults = []
 
@@ -45,7 +45,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
         best_gnb = None
         best_gnb_id = None
         best_metric_value = float('-inf')
-        postition = None
+        position = None
         sysTime = None
         
 
@@ -61,10 +61,10 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
             if interval_metric_value > best_metric_value:
                 if connected_gnb_id is not None and connected_gnb_id == file_id:
                     continue
-                best_gnb_id = file_id  # Adding 1 to match the file_id
+                best_gnb_id = file_id  
                 best_gnb = interval_df
                 best_metric_value = interval_metric_value
-                # Get the thoughput in the interval
+                # Get the throughput in the interval
         if connected_gnb is not None:
             throughput = connected_gnb["Throughput"]
             tx_packets_diff = connected_gnb["TxPacketsDiff"]
@@ -76,7 +76,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
             lost_packets_diff = connected_gnb["LostPacketsDiff"]
             distance = connected_gnb["Distance"]
             rsrp = connected_gnb["Rsrp"]
-            postition = connected_gnb["UE Position"]
+            position = connected_gnb["UE Position"]
             sysTime = connected_gnb["System Time"]
         else:
             throughput = 0
@@ -90,7 +90,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
             rsrp = None
             distance = None
             # take the position from the UE file
-            postition = interval_df["UE Position"].values[0]
+            position = interval_df["UE Position"].values[0]
             sysTime = interval_df["System Time"].values[0]
             
             
@@ -123,7 +123,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
             "LostPackets": lost_packets_diff,
             "Distance": distance,
             "Rsrp": rsrp,
-            "UE Position": postition,
+            "UE Position": position,
             "Handovers": handovers,
             "System Time": sysTime
         }
@@ -133,10 +133,9 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
 
 
         nr_timer += interval
-        # If NR timmer expires then we need to check the events
+        # If NR timer expires then we need to check the events
         if nr_timer >= NrMeasureInt:
             nr_timer -= NrMeasureInt
-            #logging.debug(f"NR timer expired. Checking events")
             if best_gnb_id is not None:
                 best_rsrp = best_gnb["Rsrp"].values[0]
                 if not ttt_started and not handover_started and not nr_event_triggered:
@@ -148,7 +147,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
                     else:
                         if connected_gnb is not None:  
                                 connected_rsrp = connected_gnb["Rsrp"]
-                                if check_A3_event(best_rsrp, connected_rsrp, A3Offset, Hys, best_gnb_id, connected_gnb_id):
+                                if check_A3_event(best_rsrp, connected_rsrp, A3Offset, Hys):
                                     logging.debug("A3 event detected. Starting TTT timer")
                                     ttt_started = True
                                     ttt_event = 3
@@ -156,7 +155,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
                 if nr_event_triggered:
                     
                     nr_event_triggered = False
-                    if ttt_event == 3 and  not check_A3_2_event(best_rsrp, connected_rsrp, A3Offset, Hys, best_gnb_id, connected_gnb_id):
+                    if ttt_event == 3 and  not check_A3_2_event(best_rsrp, connected_rsrp, A3Offset, Hys):
                         logging.info(f"A3 event detected. Handover from GNB {connected_gnb_id} to GNB {best_gnb_id}")
                         connected_gnb_id = best_gnb_id
                         handover_started = True
@@ -169,14 +168,14 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
                 ttt_timer += interval
                 # Check A3-2 event
                 if ttt_event == 3:
-                    if check_A3_2_event(best_rsrp, connected_rsrp, A3Offset, Hys, best_gnb_id, connected_gnb_id):
+                    if check_A3_2_event(best_rsrp, connected_rsrp, A3Offset, Hys):
                         logging.info(f"A3-2 event detected.Exiting TTT timer")
                         ttt_event = None
                         ttt_started = False
                         nr_event_triggered = False
                         ttt_timer = 0
                 if ttt_timer >= TTT:
-                    logging.debug(f"TTT timer expired. Asociated event: A{ttt_event}")
+                    logging.debug(f"TTT timer expired. Associated event: A{ttt_event}")
                     nr_event_triggered = True
                     ttt_timer = 0
                     ttt_started = False
@@ -187,9 +186,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
                 connected_gnb = get_gnb_data(connected_gnb_id, dataframes, index)
                 
                 if handover_remaining_time > 0:
-                    penalty_dict = {}
-                    penalty_dict["LatencySum"] = 0.020 
-                    # connected_gnb = apply_penalty(connected_gnb, penalty_dict, handover_remaining_time,interval)
+                    connected_gnb = apply_penalty(connected_gnb, penalty_dict, handover_remaining_time,interval)
                     handover_remaining_time -= interval
                     
 
@@ -201,7 +198,7 @@ def simulate_user(user=int,simDataframes=None, intervals=None, Hys=float, A3Offs
 
 
 
-def simulate_3gpp_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int,  Hys=float, A3Offset=float, NrMeasureInt=float, interval=float, DECISION_PARAMETER=str, TTT=float, penalty_time=float, intervals= None, simDataframes=None, scenario=None, packetSize=int):
+def simulate_3gpp_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int, Hys=float, A3Offset=float, NrMeasureInt=float, interval=float, DECISION_PARAMETER=str, TTT=float, penalty_time=float, intervals= None, simDataframes=None, scenario=None, packetSize=int, penalty_dict=None):
     ueResults_df = [] * nUEs
     gnbResults_list = []
     logging.info(f"Simulating 3GPP A3 NR event based handover")
@@ -245,7 +242,7 @@ def simulate_3gpp_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=i
         gnbResults_list[gnb] = pd.DataFrame(gnbResults_list[gnb])
         gnbResults_list[gnb].to_csv(gnbResults_file, index=False)
     
-    # now from the ocupation in the gnb we can calculate the restricted ue troughput
+    # now from the occupation in the gnb we can calculate the restricted ue throughput
     logging.info("Calculating the restricted UE throughput")
     # create a folder to save the results
     restricted_ueResults_folder = os.path.join(results_folder, "ue-restricted")
@@ -287,7 +284,7 @@ def simulate_3gpp_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=i
                         "MeanThroughput": "mean",
                         'PLostPackets': 'mean',
                         "Handovers": "mean",
-                        'MOS': 'mean'
+
                     })
         else:
             interval_data = {
@@ -306,11 +303,11 @@ def simulate_3gpp_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=i
                 "ConnectedUEs": 0,
                 "MeanThroughput": 0,
                 'PLostPackets': 0,
-                'MOS': 0
+
             }
         
         
-        # inssert time in the first position
+        # insert time in the first position
         interval_data = {"Time": interval, **interval_data}
         scenarioResults.append(interval_data)
     scenarioResults = pd.DataFrame(scenarioResults)

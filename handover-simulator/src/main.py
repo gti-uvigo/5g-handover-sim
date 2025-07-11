@@ -16,6 +16,7 @@ from simulator_gti_dqn import simulate_gti_dqn_handover
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
+# from dqn import train_dqn_and_simulate
 
 from utils import *
 from simulator_3gpp import simulate_3gpp_handover
@@ -212,7 +213,7 @@ if __name__ == "__main__":
     default_scFile = "../../handover-simulator/scenario/sc.txt"  # Default scenario definition filename
     default_wpFile = "../../handover-simulator/waypoints/wp.txt"  # Default waypoints filename
     default_timeToTrigger = 0.1  # Default time to trigger for NR Measurement Event in seconds
-    default_HOInterval = 0.5  # Default handover interval in seconds
+    default_HOInterval = 0.1  # Default handover interval in seconds
     default_speed = 10.0  # Default speed of the UEs in m/s
     default_trayectoryTime = 5.0  # Default time for the trajectory in seconds
     default_alpha = 5000.0  # Default alpha parameter for the scoring function
@@ -458,7 +459,7 @@ if __name__ == "__main__":
     #plot all the throughput for each user
     #plot_throughput(simDataframes, nUEs, nGnb, traces_sim_folder)
     #plot_rsrp(simDataframes, nUEs, nGnb, traces_sim_folder)
-    simulate_3gpp_handover(nUEs,debug,traces_sim_folder, nGnb, Hys, A3Offset, NrMeasureInt, interval, DECISION_PARAMETER, timeToTrigger, HOInterval,intervals, simDataframes, scenario, packetSize)
-    simulate_sbgh_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize, alpha, beta, penalty_dict)
-    simulate_ideal_sbgh_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize, alpha, beta, penalty_dict)
-    simulate_gti_dqn_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize,penalty_dict)
+    simulate_3gpp_handover(nUEs,debug,traces_sim_folder, nGnb, Hys, A3Offset, NrMeasureInt, interval, DECISION_PARAMETER, timeToTrigger, HOInterval, intervals, simDataframes, scenario, packetSize, penalty_dict)
+    simulate_sbgh_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize, alpha, beta, penalty_dict, HOInterval)
+    simulate_ideal_sbgh_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize, alpha, beta, penalty_dict, HOInterval)
+    simulate_gti_dqn_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize,penalty_dict, HOInterval)

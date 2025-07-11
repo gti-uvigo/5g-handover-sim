@@ -1,6 +1,5 @@
 #usr/bin/env python3
-# encoding: UTF-8
-
+# encoding: utf-8
 
 # File for the implementation of the DQN algorithm for the handover simulator
 from environment import Environment
@@ -12,17 +11,18 @@ import os
 import simulator_common
 from scoring import calculate_algorithm_score
 
+
 def weighted_avg(df, value_column, weight_column):
     weighted_sum = (df[value_column] * df[weight_column])
     weight_sum = df[weight_column]
     return weighted_sum / weight_sum 
 
 os.environ["KERAS_BACKEND"] = "jax"
-ALGORITHM = "DQN"
+ALGORITHM = "DDQN"
 
 
-def simulate_gti_dqn_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int, interval=float ,simDataframes=None ,intervals=None ,scenario=None, packetSize=int, penalty_dict=None):
-    # create resulf folder if not exists
+def simulate_gti_dqn_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnbs=int, interval=float ,simDataframes=None ,intervals=None ,scenario=None, packetSize=int, penalty_dict=None, penalty_time=0.1):
+    # create result folder if not exists
     result_folder_path = traces_sim_folder + "/results"
     print(result_folder_path)
     if not os.path.exists(traces_sim_folder):
@@ -35,15 +35,15 @@ def simulate_gti_dqn_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnb
     
     
     # Create the environment
-    env = Environment(simDataframes, intervals, scenario, nUEs, interval, packetSize)
+    env = Environment(simDataframes, intervals, scenario, nUEs, interval, packetSize, penalty_dict=penalty_dict, penalty_time=penalty_time)
 
     # Initialize lists for interval actions and average rewards    
     episode_rewards = [[] for _ in range(nUEs)]
     # create agents, load the models
-    train = 0
+    train = 1
     if train:
         agents = [ DQNAgent(nGnbs, env.get_observation(0).shape[0]) for _ in range(nUEs)]
-        print("Trainning the DQN agents")
+        print("Training the DQN agents")
         rewards = []
         traces = []
         thr_episode_list = []
@@ -143,16 +143,7 @@ def simulate_gti_dqn_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnb
         # for interval for each UE take the throughput
         aggregate_throughput = [sum(interval[ue]["Throughput"] for ue in range(nUEs)) for interval in traces]
     
-        # Fit polynomial
-        #degree = 3
-        #coefficients = np.polyfit(range(len(aggregate_throughput)), aggregate_throughput, degree)
-
-        #polynomial = np.poly1d(coefficients)
-
-        #trendline = polynomial(range(len(aggregate_throughput)))
-
         plt.plot(aggregate_throughput)
-        #plt.plot(trendline)
         plt.ylabel("Throughput")
         plt.title(f"Throughput over Intervals ")
         plt.savefig(os.path.join(result_folder_path, f"throughput_test.png"))
@@ -280,7 +271,6 @@ def simulate_gti_dqn_handover(nUEs=False,debug=False,traces_sim_folder=str, nGnb
         'ConnectedUEs': 'sum',
         'Occupation': 'mean',
         'PLostPackets': 'mean',
-        'MOS': 'mean'
     })
     # Calculate total throughput
     gnbs_metrics["Latency"] = gnbs_metrics['Latency'] / gnbs_metrics['Throughput']

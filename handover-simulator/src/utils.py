@@ -204,15 +204,15 @@ def load_dataframes(traces_sim_folder, nUEs, nGnb):
         dataframes.append(node_dataframes)
     return dataframes
             
- 
+
+
 def debug_dataframes(dataframes):
     for index, df in enumerate(dataframes):
         logging.debug(f"Data from File {index + 1}:")
         logging.debug(df.head())
 
 
-# Function to print the progress of a task
- 
+
 def print_progress(iteration=int, total=int, prefix='', suffix='', decimals=1, length=100, fill='█'):
     """
     Call in a loop to create terminal progress bar

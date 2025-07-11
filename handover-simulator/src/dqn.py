@@ -21,7 +21,7 @@ class DQNAgent:
         self.memory_size = 500
         self.epsilon = epsilon 
         self.epsilon_min = 0.01
-        self.epsilon_decay = 0.995 # actual value 0.995
+        self.epsilon_decay = 0.995 
         self.sync_rate = 10
         self.learning_rate = 0.01
         self.replay_counter = 0
@@ -105,8 +105,8 @@ class DQNAgent:
         
         q_max = reward + self.gamma * q_value
         return q_max
-     
-             
+
+
     # Update Weights
     def update_target_weights(self):
         self.target_net.set_weights(self.policy_net.get_weights())

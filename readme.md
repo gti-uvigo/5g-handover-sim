@@ -14,8 +14,6 @@ To run the simulator, you will need to have ns-3 and 5G-LENA installed. Please r
 
 The rest of the instructions on how to install and run the simulator expect you to have a working installation of ns-3 and 5G-LENA in the root directory of the repository, specifically in the `ns-3-dev` folder.
 
-To install ns-3 and 5G-LENA, follow these steps:
-
 > **Note:** As part of the installation process, please remember to create a symbolic link from the `network-simulator` folder into the `ns-3-dev/scratch` folder. 
 >```bash
 >ln -s /path/to/network-simulator /path/to/ns-3-dev/scratch

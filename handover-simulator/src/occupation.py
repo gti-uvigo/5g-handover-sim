@@ -4,7 +4,7 @@ import math
 
 
 def calculate_occupation(gnb_capacity=float, gnb_traffic=float):
-    """ @Auxiliar function for calculating the occupation of a gNB.
+    """ Auxiliary function for calculating the occupation of a gNB.
 
     - gnb_capacity in bps
     - gnb_traffic in bps
@@ -18,7 +18,7 @@ def calculate_occupation(gnb_capacity=float, gnb_traffic=float):
 
 
 def calculate_system_waiting_time(gnb_capacity, occupation, packet_length):
-    """ Auxiliar function for calculating the average waiting time for a packet transmitted through a gNB:
+    """ Auxiliary function for calculating the average waiting time for a packet transmitted through a gNB:
     It uses the M/D/1 queue model considering a constant packet length of "packet_length" bytes.
 
     - port_capacity in bps
@@ -31,7 +31,7 @@ def calculate_system_waiting_time(gnb_capacity, occupation, packet_length):
     
     serving_rate = gnb_capacity / (packet_length * 8) # In packets per second
     if occupation < 1:
-        # A runtime warning is expected here when the ocupation is near 1, but the error is handled
+        # A runtime warning is expected here when the occupation is near 1, but the error is handled
         average_system_waiting_time = 1.0 / serving_rate + (occupation / (2.0 * serving_rate * (1 - occupation)))
     else:
         occupation = 1-1e-5
@@ -40,9 +40,10 @@ def calculate_system_waiting_time(gnb_capacity, occupation, packet_length):
     return average_system_waiting_time
 
 def calculate_latency(average_system_waiting_time=float, channel_delay=float):
-    """ Auxiliar function for calculating the mean latency of a packet transmitted through a gNB.
+    """ Auxiliary function for calculating the mean latency of a packet transmitted through a gNB.
     
-    average_system_waiting_time in s
+    - average_system_waiting_time in s
+    - channel_delay in s
     """
 
     latency = average_system_waiting_time + channel_delay
@@ -50,7 +51,7 @@ def calculate_latency(average_system_waiting_time=float, channel_delay=float):
     return latency
 
 def calculate_throughput(occupation=float, user_throughput=float):
-    """ Auxiliar function for calculating the thoughput of a UE connected to a gNB with a given ocupation.
+    """ Auxiliary function for calculating the throughput of a UE connected to a gNB with a given occupation.
     
     - occupation
     - user_throughput in bps
@@ -67,7 +68,7 @@ def calculate_throughput(occupation=float, user_throughput=float):
 
 
 def calculate_lost_packets(occupation=float, rx_packets_diff=float, channel_packets_lost=0.0):
-    """ Auxiliar function for calculating the lost packets of a gNB.
+    """ Auxiliary function for calculating the lost packets of a gNB.
     
     - occupation
     - packet_length in bytes
@@ -77,14 +78,14 @@ def calculate_lost_packets(occupation=float, rx_packets_diff=float, channel_pack
     returns lost_packets
     """ 
     if occupation < 1:
-        ocupation_lost_packets = 0
+        occupation_lost_packets = 0
     else:
-        ocupation_lost_packets = math.ceil(rx_packets_diff * (1-(1/ occupation)))
+        occupation_lost_packets = math.ceil(rx_packets_diff * (1-(1/ occupation)))
     # The lost packets due to the channel are added to the lost packets due to the occupation
-    return ocupation_lost_packets + channel_packets_lost
+    return occupation_lost_packets + channel_packets_lost
 
 def is_gnb_stable(occupation=float):
-    """ Auxiliar function for checking if a gNB is stable or not.
+    """ Auxiliary function for checking if a gNB is stable or not.
     
     - occupation
     

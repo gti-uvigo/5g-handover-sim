@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # encoding: UTF-8
-# This file contains the scoring functions for the handover simulator. The functions are used to calculate the score of the handover simulation based on the handover events and the scenario data. The scoring functions are used to evaluate the performance of the handover simulation and to compare different handover strategies. The scoring functions are implemented in the scoring.py file and are used by the main simulation script to calculate the score of the simulation. The scoring functions are implemented using the pandas library to process the handover events and the scenario data. The scoring functions are used to calculate the score of the handover simulation based on the handover events and the scenario data. The scoring functions are used to evaluate the performance of the handover simulation and to compare different handover strategies. The scoring functions are implemented in the scoring.py file and are used by the main simulation script to calculate the score of the simulation. The scoring functions are implemented using the pandas library to process the handover events and the scenario data. The scoring functions are used to calculate the score of the handover simulation based on the handover events and the scenario data. The scoring functions are used to evaluate the performance of the handover simulation and to compare different handover strategies. The scoring functions are implemented in the scoring.py file and are used by the main simulation script to calculate the score of the simulation. The scoring functions are implemented using the pandas library to process the handover events and the scenario data. The scoring functions are used to calculate the score of the handover simulation based on the handover events and the scenario data. The scoring functions are used to evaluate the performance of the handover simulation and to compare different handover strategies. The scoring functions are implemented in the scoring.py file and are used by the main simulation script to calculate the score of the simulation. The scoring functions are implemented using the pandas library to process the handover events and the scenario data. The scoring functions are used to calculate the score of the handover simulation based on the handover events and the scenario data. The scoring functions are used to evaluate the performance of the handover simulation and to compare different handover strategies. The scoring functions are implemented in the scoring.py file and are used by the main simulation script to calculate the score of the simulation. The scoring functions are implemented using the pandas library to process the handover events and the scenario data
+# This file contains the scoring functions for the handover simulator.
 import math
 # Constants
 BW_MAX = 400.0 * 10**6  # 400 MHz
@@ -13,7 +13,7 @@ def calculate_score(user_data, scenario_data, connected_gnb, alpha,beta):
 
     Args:
     
-        user_data (DataFrame): The user data for the UE, containing the data for the simulation of each connection. Format: the same as the ns3 csv traces
+        user_data (DataFrame): The user data for the UE, containing the data for the simulation of each connection. Format: the same as the ns-3 csv traces
         
         scenario_data (DataFrame): The scenario data for the cell. Format: scenario_info dictionary as defined in the utils.py file.
 
@@ -21,14 +21,7 @@ def calculate_score(user_data, scenario_data, connected_gnb, alpha,beta):
     
         float: The score for the connection.
     """
-    
-    """
-    Proposal: 
-        The idea is to calculate a score based on the max allowed bandwidth by the gNB as this is known ahead of time and is a major factor distance.
-        Anoyher factor to take into account is the distance between the UE and the gNB. the atenuation of the signal is a proportional to the square
-        of inverse of the distance times the frequency.
-    """
-    
+
     # from the user data take the connected gNB and the distance
     if connected_gnb is None:
         return 0

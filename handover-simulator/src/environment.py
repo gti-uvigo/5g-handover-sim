@@ -8,18 +8,14 @@ MILD_SATURATION = 2 #  0 < oc < 1- user throughput => 1- oc < user throughput
 HIGH_SATURATION = 3 # 1- user throughput < oc < 1
 EXTREME_SATURATION = 4 # oc = 1
 
-LATENCY_PENALTY = 0.02
-HANDOVER_TIME = 0.1
-
 SPECTRAL_EFFICIENCY = 4 # bps/Hz
 class Environment:
-# class Environment for the dqn based handover simulator agent
-# This class is used to serve as the environment astraction for the DQN agent to interact with
-
+# class Environment for the ddqn based handover simulator agent
+# This class is used to serve as the environment abstraction for the DQN agent to interact with
 
     
 
-    def __init__(self, dataframe, intervals, scenario, nUes, interval_duration, packet_size, simulatedSaturation=False):
+    def __init__(self, dataframe, intervals, scenario, nUes, interval_duration, packet_size, simulatedSaturation=False, penalty_dict=None, penalty_time=0.1):
         """
         Initialize the Environment object.
 
@@ -62,6 +58,8 @@ class Environment:
         self.traces = []
         self.handover_timer = [0] * nUes
         self.isRecordingTraces = False
+        self.penalty_dict = penalty_dict
+        self.penalty_time = penalty_time
     def calculate_datarate_occupation(self, i):
         aggregated_datarate = 0
         for ue in range(len(self.connections)):
@@ -196,7 +194,7 @@ class Environment:
         observation_list.append(self.connections[ue_id])
         # add the gNB occupation to the observation
         # observation_list.extend(self.gnb_occupation)
-        # discretize the gNB occupation 0 if the gNB is not occupied, 1 if 0,5< occupation < 1, 2 if 0.5 < occ < 0.75 , 3 if 0.75 < occ < 1 , 4 if occ > 1
+        # 0 if the gNB is not occupied, 1 if 0,5< occupation < 1, 2 if 0.5 < occ < 0.75 , 3 if 0.75 < occ < 1 , 4 if occ > 1
         for i in range(len(self.gnb_occupation)):
             if self.gnb_occupation[i] == 0:
                 observation_list.append(0)
@@ -210,7 +208,6 @@ class Environment:
                 observation_list.append(4)
 
         
-        #observation = pd.DataFrame(observation_list).values.ravel().astype(np.float32)
         observation = np.array(observation_list).astype(np.float32)
         return observation
         
@@ -242,7 +239,6 @@ class Environment:
             None
         """
         # take action for each UE and consolidate the actions if the occupation is less than 1, if not maintain the previous action
-        #self.connections = self.ue_actions.copy()
         for i in range(len(self.ue_actions)):
             if self.ue_actions[i] != -1:
                 ue_datarate = get_gnb_data(self.ue_actions[i],self.dataframe[i],self.current_interval)["Throughput"]
@@ -312,13 +308,13 @@ class Environment:
         
     
         if not self.consolidate_directly and occupation >= 1:
-           return -1
+            return -1
         else:
             throughput = df["Throughput"]
             reward = throughput / 3.85e8
             if occupation > 1:
-                 degradation = (1 - (1/occupation))
-                 reward =reward*(1-(degradation))
+                degradation = (1 - (1/occupation))
+                reward =reward*(1-(degradation))
                 
             return reward
     
@@ -382,7 +378,7 @@ class Environment:
                     previous_action = previous_actions[ue]
                     if previous_action != a[ue]:
                         trace["Handovers"] = previous_handover + 1
-                        self.handover_timer[ue] = HANDOVER_TIME
+                        self.handover_timer[ue] = self.penalty_time
                     else:
                         trace["Handovers"] = previous_handover
                 else:
@@ -393,13 +389,12 @@ class Environment:
                     
                     if self.handover_timer[ue] >= self.interval_duration:
                         # apply the penalty
-                        
-                        trace["Latency"] += penalty_dict["Latency"]
-                        self.handover_timer[ue] -= self.interval_duration
+                        for key in self.penalty_dict:
+                            trace[key] += penalty_dict[key]
                     else:
-                        penalty_value = penalty_dict["Latency"] * (self.handover_timer[ue] / self.interval_duration)
-                        trace["Latency"] += penalty_value
-                        self.handover_timer[ue] -= self.interval_duration
+                        for key in self.penalty_dict:
+                            trace[key] += penalty_dict[key] * (self.handover_timer[ue] / self.interval_duration)
+                    self.handover_timer[ue] -= self.interval_duration
 
 
                 self.traces[ue].append(trace)

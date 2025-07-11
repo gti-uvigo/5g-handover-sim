@@ -60,27 +60,37 @@ RUN apt install -y \
         libgtk-3-dev \
         vtun \
         lxc \
-        uml-utilities
+        uml-utilities\
+        python3-pip 
 
 
-
+COPY . /app/
 
 # Set working directory
 WORKDIR /app
 
-# source the venv environment in ./venv
-RUN source ./venv/bin/activate
 
-# changuing the working directory to /app/ns-3-dev
+# Install Python dependencies
+RUN pip3 install --upgrade pip
+RUN pip3 install -r requirements.txt
+
+# # clone the ns-3-dev repository
+RUN git clone https://gitlab.com/nsnam/ns-3-dev.git
+# checkout the specific version of ns-3-dev (3.41)
+RUN cd ns-3-dev && git checkout ns-3.41
+# change the working directory contrib/
+WORKDIR /app/ns-3-dev/contrib
+# Install 5G-LENA
+RUN git clone https://gitlab.com/cttc-lena/nr.git
+# checkout the specific version of 5G-LENA (5g-lena-v3.0.y)
+RUN cd nr && git checkout 5g-lena-v3.0.y
+# create a symbolic link from /app/network-simulator to /app/ns-3-dev/scratch
+RUN ln -s /app/network-simulator /app/ns-3-dev/scratch/network-simulator
+
+
+# # changing the working directory to /app/ns-3-dev
 WORKDIR /app/ns-3-dev
 
-# compile ns-3
+# # compile ns-3
 RUN ./ns3 configure --enable-examples --enable-tests -d optimized
 RUN ./ns3 build
-
-# Uncomment to copy the necessary files to the container
-# Not needed for now as this data is accessible through
-# volumes declared in the top level docker compose
-
-#COPY ./handover-simulator /app/handover-simulator
-#COPY ./ns-3-dev /app/ns-3-dev
