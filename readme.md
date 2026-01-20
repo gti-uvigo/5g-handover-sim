@@ -1,6 +1,8 @@
 # End-to-end Handover Simulator for 5G Heterogeneous Network Enviroments
 
 [![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15772614.svg)](https://doi.org/10.5281/zenodo.15772614)
+[![DOI](https://img.shields.io/badge/DOI-10.1109%2FOJCOMS.2025.3649168-green)](https://doi.org/10.1109/OJCOMS.2025.3649168)
+
 
 # Introduction
 
@@ -37,10 +39,11 @@ In this folder there are several subfolders, ```src/``` for the source code, ```
 
 The results of the handover simulation are stored inside the specific trace folder, in a subfolder named `results/`. Each algorithm has its own subfolder, and the results are stored in CSV files.
 
-The handover simulator implements three different handover algorithms:
+The handover simulator implements four different handover algorithms:
 1. **3GPP Rel.15 based Algorithm**: This is the standard handover algorithm defined by 3GPP for 5G networks.
-2. **Score Based Greedy Handover (SBGH/GTI)**: This proposed algorithm selects the target cell based on a scoring mechanism that takes into account various factors such as signal strength, bandwidth, and cell load. [Citation needed]
-3. **Multi-agent DDQN based Handover**: This algorithm leverages a multi-agent Double Deep Q-Network (DDQN) approach to optimize handover decisions. [Citation needed]
+2. **3GPP Rel.16 Conditional Handover (CHO)**: This algorithm is implementation of the Conditional Handover mechanism introduced in 3GPP Release 16.
+3. **Score Based Greedy Handover (SBGH/GTI)**: This proposed algorithm selects the target cell based on a scoring mechanism that takes into account various factors such as signal strength, bandwidth, and cell load. [Citation needed]
+4. **Multi-agent DDQN based Handover**: This algorithm leverages a multi-agent Double Deep Q-Network (DDQN) approach to optimize handover decisions. [Citation needed]
 
 ## Interaction between Parts
 1. The network simulator generates traces and performance metrics during the simulation of the 5G HetNet environment.
@@ -175,3 +178,20 @@ This repository contains two functional components, each under a different licen
 
 - The **handover simulator** is distributed under the **MIT License**. The DDQN Agent code is based on code from [PacktPublishing/Advanced-Deep-Learning-with-Keras](https://github.com/PacktPublishing/Advanced-Deep-Learning-with-Keras).
 - The **network simulator** is distributed under the **GNU General Public License v2 (GPL-2.0)**. It is based on code examples  from [5G-LENA](https://5g-lena.cttc.es/).
+
+# Citation
+
+If you use this code in your research, please cite the following paper:
+
+```
+@ARTICLE{rua2026intelligent,
+  author={Rúa-Estévez, José Manuel and Fondo-Ferreiro, Pablo and Gil-Castiñeira, Felipe and González-Castaño, Francisco Javier},
+  journal={IEEE Open Journal of the Communications Society}, 
+  title={Intelligent Handover Solutions for Heterogeneous B5G Cellular Networks: Proposals and Full-Stack Evaluation}, 
+  year={2026},
+  volume={7},
+  number={},
+  pages={1-19},
+  keywords={Handover;5G mobile communication;Millimeter wave communication;Standards;Load modeling;Signal to noise ratio;3GPP;Optimization;Macrocell networks;Heuristic algorithms;5G;B5G;deep learning;handover;heterogeneous networks;HetNets;reinforcement learning;simulation environment},
+  doi={10.1109/OJCOMS.2025.3649168}}
+```
