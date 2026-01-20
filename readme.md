@@ -1,7 +1,7 @@
 # End-to-end Handover Simulator for 5G Heterogeneous Network Enviroments
 
-[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.15772614.svg)](https://doi.org/10.5281/zenodo.15772614)
-[![DOI](https://img.shields.io/badge/DOI-10.1109%2FOJCOMS.2025.3649168-green)](https://doi.org/10.1109/OJCOMS.2025.3649168)
+[![DOI_CODE](https://zenodo.org/badge/DOI/10.5281/zenodo.15772614.svg)](https://doi.org/10.5281/zenodo.15772614)
+[![DOI_PAPER](https://img.shields.io/badge/DOI-10.1109%2FOJCOMS.2025.3649168-green)](https://doi.org/10.1109/OJCOMS.2025.3649168)
 
 
 # Introduction
@@ -42,8 +42,11 @@ The results of the handover simulation are stored inside the specific trace fold
 The handover simulator implements four different handover algorithms:
 1. **3GPP Rel.15 based Algorithm**: This is the standard handover algorithm defined by 3GPP for 5G networks.
 2. **3GPP Rel.16 Conditional Handover (CHO)**: This algorithm is implementation of the Conditional Handover mechanism introduced in 3GPP Release 16.
-3. **Score Based Greedy Handover (SBGH/GTI)**: This proposed algorithm selects the target cell based on a scoring mechanism that takes into account various factors such as signal strength, bandwidth, and cell load. [Citation needed]
-4. **Multi-agent DDQN based Handover**: This algorithm leverages a multi-agent Double Deep Q-Network (DDQN) approach to optimize handover decisions. [Citation needed]
+3. **Score Based Greedy Handover (SBGH)**: This proposed algorithm selects the target cell based on a scoring mechanism that takes into account various factors such as signal strength, bandwidth, and cell load.
+4. **Multi-agent DDQN based Handover**: This algorithm leverages a multi-agent Double Deep Q-Network (DDQN) approach to optimize handover decisions.
+
+> **Note:**
+> SBGH and the Multi Agent DDQN Based Handover are described in the associated publication (see [Citation](#citation)).
 
 ## Interaction between Parts
 1. The network simulator generates traces and performance metrics during the simulation of the 5G HetNet environment.
@@ -172,7 +175,7 @@ In a simulation with n UEs and m GNBs, there are n*m simulations. Each simulatio
 
 In the subfolder `<trace folder>/results/`, several folders can be found, one for each algorithm of handover.
 
-## License
+# License
 
 This repository contains two functional components, each under a different license:
 
