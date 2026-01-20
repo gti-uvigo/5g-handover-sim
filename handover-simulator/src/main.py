@@ -16,11 +16,10 @@ from simulator_gti_dqn import simulate_gti_dqn_handover
 import matplotlib.pyplot as plt
 import tensorflow as tf
 
-# from dqn import train_dqn_and_simulate
-
 from utils import *
 from simulator_3gpp import simulate_3gpp_handover
-from simulator_sbgh import simulate_sbgh_handover, simulate_ideal_sbgh_handover
+from simulator_3gpp_rel16 import simulate_3gpp_cho_handover
+from simulator_sbgh import simulate_ideal_sbgh_handover, simulate_sbgh_handover
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -294,6 +293,24 @@ if __name__ == "__main__":
     
     
     nGnb = len(scenario["gnbs"])
+    
+    # Crear lista de FR1/FR2 por cada gNB según su Band_ID
+    scenario_bands = scenario['bands']
+    bands = []
+    for gnb in scenario['gnbs']:
+        gnb_band_id = gnb['Band_ID']
+        # Buscar la banda correspondiente en el escenario
+        band_info = scenario_bands[gnb_band_id]
+        central_freq_ghz = band_info['Central_Frequency_Hz'] / 1e9
+        
+        # Clasificar como FR1 o FR2
+        if 0.41 <= central_freq_ghz <= 7.125:
+            bands.append('FR1')
+        elif 24.25 <= central_freq_ghz <= 52.6:
+            bands.append('FR2')
+        else:
+            bands.append('Unknown')
+    
     if not args.trace:
         
         for iUe in range(nUEs):
@@ -362,13 +379,27 @@ if __name__ == "__main__":
             print(f"  - Min Y: {scenario_dimensions['min_y']}")
             print(f"  - Max X: {scenario_dimensions['max_x']}")
             print(f"  - Max Y: {scenario_dimensions['max_y']}")
-            bands = scenario['bands']
-            for i, band in enumerate(bands, 1):
+            
+            # Mostrar información de las bandas del escenario
+            for i, band in enumerate(scenario['bands'], 1):
+                central_freq_hz = band['Central_Frequency_Hz']
+                central_freq_ghz = central_freq_hz / 1e9
+                
+                # FR1: 410 MHz - 7.125 GHz
+                # FR2: 24.25 GHz - 52.6 GHz
+                if 0.41 <= central_freq_ghz <= 7.125:
+                    fr_type = 'FR1'
+                elif 24.25 <= central_freq_ghz <= 52.6:
+                    fr_type = 'FR2'
+                else:
+                    fr_type = 'Unknown'
+                
                 print(f"Band {i}:")
                 print(f"  - Band ID: {band['Band_ID']}")
                 print(f"  - Central Frequency: {format_frequency(band['Central_Frequency_Hz'])}")
                 print(f"  - Bandwidth: {format_frequency(band['User_Bandwidth_Hz'])}")
-            gnbs = scenario['gnbs']
+                print(f"  - Type: {fr_type}")
+            
             print(f"- Logging: {'Enabled' if debug else 'Disabled'}")
             print(f"- Simulation Time: {simTime} seconds")
             print(f"- Number of gNodeBs: {nGnb}")
@@ -434,8 +465,6 @@ if __name__ == "__main__":
         
         #timeToTrigger = parameters["timeToTrigger"]
     
-    
-    logging.info(f"Parameters: {parameters}")
     simDataframes = load_dataframes(traces_sim_folder, nUEs, nGnb)
     intervals = simDataframes[0][0]['Time'].unique()
     # Calculate the packets send and received by the UEs in the interval
@@ -455,11 +484,12 @@ if __name__ == "__main__":
             simDataframes[user][gnb].loc[0, 'LostPacketsDiff'] = simDataframes[user][gnb].loc[0, 'LostPackets']
             # calculate the throughput
             simDataframes[user][gnb]['Throughput'] = (simDataframes[user][gnb]['RxBytesDiff'] * 8) / interval
-            
+
     #plot all the throughput for each user
     #plot_throughput(simDataframes, nUEs, nGnb, traces_sim_folder)
     #plot_rsrp(simDataframes, nUEs, nGnb, traces_sim_folder)
-    simulate_3gpp_handover(nUEs,debug,traces_sim_folder, nGnb, Hys, A3Offset, NrMeasureInt, interval, DECISION_PARAMETER, timeToTrigger, HOInterval, intervals, simDataframes, scenario, packetSize, penalty_dict)
+    simulate_3gpp_handover(nUEs, debug, traces_sim_folder, nGnb, Hys, A3Offset, NrMeasureInt, interval, DECISION_PARAMETER, timeToTrigger, HOInterval, intervals, simDataframes, scenario, packetSize, penalty_dict)
+    simulate_3gpp_cho_handover(nUEs, debug, traces_sim_folder, nGnb, Hys, A3Offset, NrMeasureInt, interval, DECISION_PARAMETER, timeToTrigger, HOInterval, intervals, simDataframes, scenario, packetSize, penalty_dict, bands)
     simulate_sbgh_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize, alpha, beta, penalty_dict, HOInterval)
     simulate_ideal_sbgh_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize, alpha, beta, penalty_dict, HOInterval)
     simulate_gti_dqn_handover(nUEs,debug,traces_sim_folder, nGnb, interval ,simDataframes ,intervals ,scenario, packetSize,penalty_dict, HOInterval)
