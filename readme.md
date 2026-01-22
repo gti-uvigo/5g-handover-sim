@@ -2,7 +2,8 @@
 
 [![DOI_CODE](https://zenodo.org/badge/DOI/10.5281/zenodo.15772613.svg)](https://doi.org/10.5281/zenodo.15772613)
 [![DOI_PAPER](https://img.shields.io/badge/DOI-10.1109%2FOJCOMS.2025.3649168-green)](https://doi.org/10.1109/OJCOMS.2025.3649168)
-
+[![Docker Image CI](https://github.com/gti-uvigo/5g-handover-sim/actions/workflows/docker-image.yml/badge.svg)](https://github.com/gti-uvigo/5g-handover-sim/actions/workflows/docker-image.yml)
+[![Github Pages CI](https://github.com/gti-uvigo/5g-handover-sim/actions/workflows/pages/pages-build-deployment/badge.svg)](https://github.com/gti-uvigo/5g-handover-sim/actions/workflows/pages/pages-build-deployment)
 
 # Introduction
 
