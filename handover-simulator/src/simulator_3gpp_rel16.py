@@ -191,7 +191,7 @@ def simulate_user(user=int, simDataframes=None, intervals=None, Hys=float, A3Off
                     gnb_hys = Hys_FR2 if gnb_band == "FR2" else Hys
                     
                     # Check A3 event for this gNB with appropriate Hys
-                    if check_A3_event(gnb_rsrp, connected_rsrp, A3Offset, gnb_hys, gnb_id, connected_gnb_id):
+                    if check_A3_event(gnb_rsrp, connected_rsrp, A3Offset, gnb_hys):
                         # A3 event detected! Enter CHO mode
                         logging.info(f"UE {user}: A3 event detected from GNB {gnb_id} ({gnb_band}, Hys={gnb_hys}dB). Entering CHO mode")
                         cho_mode = True
@@ -219,7 +219,7 @@ def simulate_user(user=int, simDataframes=None, intervals=None, Hys=float, A3Off
                                 candidate_ttt = TTT
                             
                             # Check if candidate meets A3 condition
-                            if check_A3_event(candidate_rsrp, connected_rsrp, A3Offset, candidate_hys, candidate_id, connected_gnb_id):
+                            if check_A3_event(candidate_rsrp, connected_rsrp, A3Offset, candidate_hys):
                                 logging.debug(f"UE {user}: GNB {candidate_id} ({candidate_band}) added as CHO candidate (TTT={candidate_ttt}s, Hys={candidate_hys}dB)")
                                 cho_candidates[candidate_id] = {
                                     'timer': 0,
@@ -252,7 +252,7 @@ def simulate_user(user=int, simDataframes=None, intervals=None, Hys=float, A3Off
                     
                     # Check if A3-2 event occurred (candidate no longer suitable)
                     # A3-2: RSRP_neighbor < RSRP_serving + A3Offset - Hys
-                    if check_A3_2_event(candidate_rsrp, connected_rsrp, A3Offset, candidate_hys, candidate_id, connected_gnb_id):
+                    if check_A3_2_event(candidate_rsrp, connected_rsrp, A3Offset, candidate_hys):
                         # Calculate the A3-2 threshold for logging
                         a32_threshold = connected_rsrp + A3Offset - candidate_hys
                         # A3-2 event detected - candidate falls below threshold

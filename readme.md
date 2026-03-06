@@ -60,17 +60,13 @@ You can set the environment in two ways:
 2. Native
 
 ### 1. Using Docker
-1. execute docker-compose in the root directory:
-```bash
-docker-compose up -d
-```
-1. Make sure the following dependencies are installed:
+1.1. Make sure the following dependencies are installed:
 * [Docker](https://www.docker.com/)
 * [Docker Compose](https://docs.docker.com/compose/)
 
-1. Please refer to the [Docker installation guide](https://docs.docker.com/engine/install/) and the [Docker Compose installation guide](https://docs.docker.com/compose/install/) for your specific distribution.
+Please refer to the [Docker installation guide](https://docs.docker.com/engine/install/) and the [Docker Compose installation guide](https://docs.docker.com/compose/install/) for your specific distribution.
 
-2. Ensure that the Docker services are up and running. You can check the status of the services by running:
+1.2. Ensure that the Docker services are up and running. You can check the status of the services by running:
 ```bash
 sudo systemctl status docker.service
 ```
@@ -81,6 +77,17 @@ The user should be added to the Docker group to interact without root privileges
 ```bash
 sudo usermod -aG docker $USER
 ```
+1.3 execute docker-compose in the root directory:
+```bash
+docker compose up -d --build
+```
+1.4 run the service:
+```bash
+docker compose run simulator
+```
+
+1.5. Go to 2.3 step 
+
 ### 2.Native
 Please refer to the [5G-LENA documentation](https://cttc-lena.gitlab.io/nr/html/index.html#getting-started) for detailed instructions on how to set up ns-3 and 5G-LENA.
 
@@ -88,22 +95,22 @@ Please refer to the [5G-LENA documentation](https://cttc-lena.gitlab.io/nr/html/
  
 To build and run the project, follow these instructions:
 
-1. Open a terminal and navigate to the ns3-dev folder:
+2.1. Open a terminal and navigate to the ns3-dev folder:
 
 ```bash
 cd ns3-dev
 ```
 
-2. Configure the build profile for optimized building by running the following command:
+2.2. Configure the build profile for optimized building by running the following command:
  
 ```bash
 ./ns3 configure --build-profile=optimized
 ```
-3. Once the build process is complete, navigate to the handover-simulator folder:
+2.3. Once the build process is complete, navigate to the handover-simulator folder:
 ```bash
 cd ../handover-simulator/src
 ```
-4. Start the handover simulator by running the following command:
+2.4. Start the handover simulator by running the following command:
 ```bash
 python3 main.py
 ```
