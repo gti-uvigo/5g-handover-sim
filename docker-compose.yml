@@ -8,3 +8,7 @@ services:
     image: 5g-handover-sim:latest
     working_dir: /app
     command: bash
+    tty: true
+    stdin_open: true
+    volumes:
+      - ./handover-simulator/src:/app/handover-simulator/src
