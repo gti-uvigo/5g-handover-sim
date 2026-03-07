@@ -12,7 +12,7 @@ This repository contains a full-stack 5G HetNet Simulator designed to evaluate t
 - A **network-level simulator** built on [ns-3 3.41](https://www.nsnam.org/) with the [5G-LENA](https://5g-lena.cttc.es/) module, which generates realistic PHY/MAC traces for each UE–gNB pair.
 - A **high-level handover simulator** written in Python that consumes those traces and runs different handover decision algorithms.
 
-This architecture lets you run full-stack experiments — from radio propagation to AI-based handover decisions — without modifying the ns-3 core.
+This architecture decouples the physical-layer simulation from the algorithmic evaluation: ns-3 traces are generated once and reused across all handover algorithms.
 
 **Tested with:**
 - ns-3 3.41
