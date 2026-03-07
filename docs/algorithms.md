@@ -83,9 +83,9 @@ where:
 - $\text{BW}_\text{max} = 400\,\text{MHz}$ — normalisation constant
 - $p(\text{RSRP})$ — normalised signal quality:
 
-$$p = \frac{\text{RSRP} - \text{RSRP}_\text{min}}{\text{RSRP}_\text{max} - \text{RSRP}_\text{min}}, \quad \text{clamped to } [0, 1]$$
+$$p = \frac{\text{RSRP} - \text{RSRP}_{\min}}{\text{RSRP}_{\max} - \text{RSRP}_{\min}}, \quad \text{clamped to } [0, 1]$$
 
-with $\text{RSRP}_\text{min} = -100$ and $\text{RSRP}_\text{max} = -80$.
+with $\text{RSRP}_{\min} = -100$ and $\text{RSRP}_{\max} = -80$.
 
 - $\alpha$ — tunable weight (CLI: `--alpha`, default `5000.0`)
 
@@ -93,7 +93,7 @@ with $\text{RSRP}_\text{min} = -100$ and $\text{RSRP}_\text{max} = -80$.
 
 A handover is only executed if:
 
-$$\frac{\text{score}_\text{best}}{\text{score}_\text{current}} > \text{SCORE\_THRESHOLD} \quad (= 1.25)$$
+$$\frac{\text{score}_{\text{best}}}{\text{score}_{\text{current}}} > 1.25$$
 
 This avoids unnecessary handovers to marginally better cells.
 
