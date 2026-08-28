@@ -5,49 +5,42 @@ title: "End-to-end Handover Simulator for 5G Heterogeneous Network Environments"
 doi: "10.5281/zenodo.15772613"
 
 authors:
+  - family-names: "Rúa-Estévez"
+    given-names: "José Manuel"
+    orcid: "https://orcid.org/0000-0001-5115-8578"
 
-* family-names: "Rúa-Estévez"
-  given-names: "José Manuel"
-  orcid: "https://orcid.org/0000-0001-5115-8578"
+  - family-names: "Fondo-Ferreiro"
+    given-names: "Pablo"
+    orcid: "https://orcid.org/0000-0002-7732-8288"
 
-* family-names: "Fondo-Ferreiro"
-  given-names: "Pablo"
-  orcid: "https://orcid.org/0000-0002-7732-8288"
+  - family-names: "Gil-Castiñeira"
+    given-names: "Felipe"
+    orcid: "https://orcid.org/0000-0002-5164-0855"
 
-* family-names: "Gil-Castiñeira"
-  given-names: "Felipe"
-  orcid: "https://orcid.org/0000-0002-5164-0855"
-
-* family-names: "González-Castaño"
-  given-names: "Francisco Javier"
-  orcid: "https://orcid.org/0000-0001-5225-8378"
+  - family-names: "González-Castaño"
+    given-names: "Francisco Javier"
+    orcid: "https://orcid.org/0000-0001-5225-8378"
 
 repository-code: "https://github.com/gti-uvigo/5g-handover-sim"
 
 preferred-citation:
-type: article
-authors:
-- family-names: "Rúa-Estévez"
-given-names: "José Manuel"
-orcid: "https://orcid.org/0000-0001-5115-8578"
-
-```
-- family-names: "Fondo-Ferreiro"
-  given-names: "Pablo"
-  orcid: "https://orcid.org/0000-0002-7732-8288"
-
-- family-names: "Gil-Castiñeira"
-  given-names: "Felipe"
-  orcid: "https://orcid.org/0000-0002-5164-0855"
-
-- family-names: "González-Castaño"
-  given-names: "Francisco Javier"
-  orcid: "https://orcid.org/0000-0001-5225-8378"
-```
-
-title: "Intelligent Handover Solutions for Heterogeneous B5G Cellular Networks: Proposals and Full-Stack Evaluation"
-journal: "IEEE Open Journal of the Communications Society"
-year: 2026
-volume: 7
-pages: "1-19"
-doi: "10.1109/OJCOMS.2025.3649168"
+  type: article
+  authors:
+    - family-names: "Rúa-Estévez"
+      given-names: "José Manuel"
+      orcid: "https://orcid.org/0000-0001-5115-8578"
+    - family-names: "Fondo-Ferreiro"
+      given-names: "Pablo"
+      orcid: "https://orcid.org/0000-0002-7732-8288"
+    - family-names: "Gil-Castiñeira"
+      given-names: "Felipe"
+      orcid: "https://orcid.org/0000-0002-5164-0855"
+    - family-names: "González-Castaño"
+      given-names: "Francisco Javier"
+      orcid: "https://orcid.org/0000-0001-5225-8378"
+  title: "Intelligent Handover Solutions for Heterogeneous B5G Cellular Networks: Proposals and Full-Stack Evaluation"
+  journal: "IEEE Open Journal of the Communications Society"
+  year: 2026
+  volume: 7
+  pages: "1-19"
+  doi: "10.1109/OJCOMS.2025.3649168"
