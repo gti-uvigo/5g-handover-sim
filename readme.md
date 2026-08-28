@@ -9,14 +9,14 @@
 
 This repository contains a full-stack 5G HetNet Simulator designed to evaluate the performance of various handover algorithms in heterogeneous network environments. The simulator couples:
 
-- A **network-level simulator** built on [ns-3 3.41](https://www.nsnam.org/) with the [5G-LENA](https://5g-lena.cttc.es/) module, which generates realistic PHY/MAC traces for each UE–gNB pair.
+- A **network-level simulator** built on [ns-3 3.48](https://www.nsnam.org/) with the [5G-LENA](https://5g-lena.cttc.es/) module, which generates realistic PHY/MAC traces for each UE–gNB pair.
 - A **high-level handover simulator** written in Python that consumes those traces and runs different handover decision algorithms.
 
 This architecture decouples the physical-layer simulation from the algorithmic evaluation: ns-3 traces are generated once and reused across all handover algorithms.
 
 **Tested with:**
-- ns-3 3.41
-- 5G-LENA 3.x.y
+- ns-3 3.48
+- 5G-LENA 5.1
 
 ---
 
@@ -112,8 +112,8 @@ See [docs/algorithms.md](docs/algorithms.md) for full algorithm details.
 
 ### Native
 
-- Ubuntu 22.04 (recommended)
-- ns-3 3.41 with 5G-LENA 3.x.y — see the [5G-LENA getting-started guide](https://cttc-lena.gitlab.io/nr/html/index.html#getting-started)
+- Ubuntu 24.04 (recommended)
+- ns-3 3.48 with 5G-LENA 5.1 — see the [5G-LENA getting-started guide](https://cttc-lena.gitlab.io/nr/html/index.html#getting-started)
 - Python 3.10+
 
 ---
@@ -122,7 +122,7 @@ See [docs/algorithms.md](docs/algorithms.md) for full algorithm details.
 
 ### Option A – Docker (recommended)
 
-The Docker image automatically installs ns-3.41, 5G-LENA, and all Python dependencies.
+The Docker image automatically installs ns-3.48, 5G-LENA 5.1, and all Python dependencies.
 
 **1. Verify Docker is running:**
 ```bash
@@ -140,6 +140,13 @@ newgrp docker
 ```bash
 docker compose up -d --build
 ```
+
+> The ns-3 build is limited to 4 parallel compilation jobs (`NS3_BUILD_JOBS` in
+> `docker-compose.yml`), because the 5G-LENA translation units need roughly 2 GB
+> of memory each and the build is otherwise killed by the OOM handler on Docker
+> installations with a small memory limit. Raise it if your Docker VM has more
+> RAM: `docker compose build --build-arg NS3_BUILD_JOBS=8`. Do not run two
+> builds of the image at the same time — they will compete for the same memory.
 
 **4. Open an interactive shell inside the container:**
 ```bash

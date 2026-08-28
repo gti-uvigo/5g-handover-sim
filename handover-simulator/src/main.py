@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 # encoding: UTF-8
 
+import glob
 import os
 from datetime import datetime
 import argparse
@@ -329,7 +330,13 @@ if __name__ == "__main__":
         ns3_dir = os.path.join(root_folder_path+ "/","ns-3-dev/")
         ns3_executable = os.path.join(ns3_dir,"ns3")
         ns3_simulation_dir = os.path.join(ns3_dir,"build/scratch/network-simulator/")
-        ns3_simulation_exec = os.path.join(ns3_simulation_dir,"ns3.41-sim-optimized")
+        # The binary name is prefixed with the ns-3 version (e.g. ns3.48-sim-optimized),
+        # so it is resolved at runtime instead of being hardcoded.
+        ns3_simulation_exec = os.path.join(ns3_simulation_dir,"ns3.48-sim-optimized")
+        if not os.path.exists(ns3_simulation_exec):
+            candidates = glob.glob(os.path.join(ns3_simulation_dir,"ns3*-sim-optimized"))
+            if candidates:
+                ns3_simulation_exec = candidates[0]
         ns3_sim_src_folder = os.path.join("","scratch/network-simulator")
         ns3_sim_src_main_file = os.path.join(ns3_sim_src_folder,"sim.cc") 
         if  debug: 

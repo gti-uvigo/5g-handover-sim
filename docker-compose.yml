@@ -5,6 +5,11 @@ services:
     build: 
       context: .
       dockerfile: dockerfile
+      args:
+        # Parallel ns-3 compilation jobs. Keep it low: the 5G-LENA translation
+        # units are memory hungry and the build gets OOM-killed if Docker does
+        # not have enough memory (roughly 2 GB per job).
+        NS3_BUILD_JOBS: "4"
     image: 5g-handover-sim:latest
     working_dir: /app
     command: bash

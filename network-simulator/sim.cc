@@ -38,6 +38,7 @@
 #include <cstdlib>
 #include <dirent.h>
 #include <iostream>
+#include <map>
 #include <ostream>
 #include <random>
 #include <sstream>
@@ -469,88 +470,62 @@ process_result(const std::string& filename)
     return 0;
 }
 
-BandwidthPartInfo::Scenario getScenario(const std::string& scenarioModel) {
-    if (scenarioModel == "InH_OfficeMixed")
-    {
-        return BandwidthPartInfo::InH_OfficeMixed;
-    }
-    else if (scenarioModel == "InH_OfficeMixed_LoS")
-    {
-        return BandwidthPartInfo::InH_OfficeMixed_LoS;
-    }
-    else if (scenarioModel == "InH_OfficeMixed_nLoS")
-    {
-        return BandwidthPartInfo::InH_OfficeMixed_nLoS;
-    }
-    else if (scenarioModel == "InH_OfficeOpen")
-    {
-        return BandwidthPartInfo::InH_OfficeOpen;
-    }
-    else if (scenarioModel == "InH_OfficeOpen_LoS")
-    {
-        return BandwidthPartInfo::InH_OfficeOpen_LoS;
-    }
-    else if (scenarioModel == "InH_OfficeOpen_nLoS")
-    {
-        return BandwidthPartInfo::InH_OfficeOpen_nLoS;
-    }
-    else if (scenarioModel == "RMa")
-    {
-        return BandwidthPartInfo::RMa;
-    }
-    else if (scenarioModel == "RMa_LoS")
-    {
-        return BandwidthPartInfo::RMa_LoS;
-    }
-    else if (scenarioModel == "RMa_nLoS")
-    {
-        return BandwidthPartInfo::RMa_nLoS;
-    }
-    else if (scenarioModel == "UMa")
-    {
-        return BandwidthPartInfo::UMa;
-    }
-    else if (scenarioModel == "UMa_Buildings")
-    {
-        return BandwidthPartInfo::UMa_Buildings;
-    }
-    else if (scenarioModel == "UMa_LoS")
-    {
-        return BandwidthPartInfo::UMa_LoS;
-    }
-    else if (scenarioModel == "UMa_nLoS")
-    {
-        return BandwidthPartInfo::UMa_nLoS;
-    }
-    else if (scenarioModel == "UMi_Buildings")
-    {
-        return BandwidthPartInfo::UMi_Buildings;
-    }
-    else if (scenarioModel == "UMi_StreetCanyon")
-    {
-        return BandwidthPartInfo::UMi_StreetCanyon;
-    }
-    else if (scenarioModel == "UMi_StreetCanyon_LoS")
-    {
-        return BandwidthPartInfo::UMi_StreetCanyon_LoS;
-    }
-    else if (scenarioModel == "UMi_StreetCanyon_nLoS")
-    {
-        return BandwidthPartInfo::UMi_StreetCanyon_nLoS;
-    }
-    else
+/**
+ * @brief Propagation scenario and channel condition used by NrChannelHelper.
+ */
+struct ScenarioConfig
+{
+    std::string scenario;  //!< Scenario name, e.g. "UMi"
+    std::string condition; //!< Channel condition: "LOS", "NLOS", "Buildings" or "Default"
+};
+
+/**
+ * @brief Translate a scenario name into the (scenario, channel condition) pair
+ * expected by NrChannelHelper::ConfigureFactories().
+ *
+ * Since 5G-LENA v4.0 the scenario is no longer part of the band configuration:
+ * the propagation scenario and the channel condition are configured separately
+ * in the channel helper, so the old BandwidthPartInfo::Scenario values are
+ * split into a scenario string plus a condition string.
+ *
+ * @param scenarioModel scenario name, e.g. "UMi_StreetCanyon_LoS"
+ * @return pair {scenario, condition}, e.g. {"UMi", "LOS"}
+ */
+ScenarioConfig getScenario(const std::string& scenarioModel) {
+    static const std::map<std::string, ScenarioConfig> scenarios = {
+        {"InH_OfficeMixed", {"InH-OfficeMixed", "Default"}},
+        {"InH_OfficeMixed_LoS", {"InH-OfficeMixed", "LOS"}},
+        {"InH_OfficeMixed_nLoS", {"InH-OfficeMixed", "NLOS"}},
+        {"InH_OfficeOpen", {"InH-OfficeOpen", "Default"}},
+        {"InH_OfficeOpen_LoS", {"InH-OfficeOpen", "LOS"}},
+        {"InH_OfficeOpen_nLoS", {"InH-OfficeOpen", "NLOS"}},
+        {"RMa", {"RMa", "Default"}},
+        {"RMa_LoS", {"RMa", "LOS"}},
+        {"RMa_nLoS", {"RMa", "NLOS"}},
+        {"UMa", {"UMa", "Default"}},
+        {"UMa_Buildings", {"UMa", "Buildings"}},
+        {"UMa_LoS", {"UMa", "LOS"}},
+        {"UMa_nLoS", {"UMa", "NLOS"}},
+        {"UMi_Buildings", {"UMi", "Buildings"}},
+        {"UMi_StreetCanyon", {"UMi", "Default"}},
+        {"UMi_StreetCanyon_LoS", {"UMi", "LOS"}},
+        {"UMi_StreetCanyon_nLoS", {"UMi", "NLOS"}},
+    };
+
+    auto it = scenarios.find(scenarioModel);
+    if (it == scenarios.end())
     {
         throw std::invalid_argument("Invalid scenario model");
     }
+    return it->second;
 }
 
 int
 simulate_process(SimulationParameters params, std::ofstream* file)
 {
-    enum BandwidthPartInfo::Scenario scenarioEnum;
-    scenarioEnum = getScenario(params.scenario);
+    ScenarioConfig scenarioConfig = getScenario(params.scenario);
 
-    Config::SetDefault("ns3::LteRlcUm::MaxTxBufferSize", UintegerValue(1000 *200));
+    Config::SetDefault("ns3::NrRlcUm::MaxTxBufferSize", UintegerValue(1000 *200));
 
     // enable logging
     if (params.logging)
@@ -695,8 +670,22 @@ simulate_process(SimulationParameters params, std::ofstream* file)
      * Set the channel model for the NR simulation
      */
     Config::SetDefault("ns3::ThreeGppChannelModel::UpdatePeriod", TimeValue(MilliSeconds(0)));
-    nrHelper->SetChannelConditionModelAttribute("UpdatePeriod", TimeValue(MilliSeconds(0)));
-    nrHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(false));
+
+    /*
+     * Since 5G-LENA v4.0 the channel is built by NrChannelHelper instead of NrHelper:
+     * the scenario, the channel condition and the fading model are configured here and
+     * the resulting spectrum channels are later assigned to the operation bands.
+     */
+    Ptr<NrChannelHelper> channelHelper = CreateObject<NrChannelHelper>();
+    channelHelper->ConfigureFactories(scenarioConfig.scenario,
+                                      scenarioConfig.condition,
+                                      "ThreeGpp");
+    // The channel condition model type depends on the selected condition (LOS/NLOS/Buildings
+    // models have no UpdatePeriod attribute), so the update period is set as a default value
+    // of the 3GPP condition model instead of through the channel helper.
+    Config::SetDefault("ns3::ThreeGppChannelConditionModel::UpdatePeriod",
+                       TimeValue(MilliSeconds(0)));
+    channelHelper->SetPathlossAttribute("ShadowingEnabled", BooleanValue(false));
 
     nrHelper->SetSchedulerAttribute("FixedMcsDl", BooleanValue(params.useFixedMcs));
     nrHelper->SetSchedulerAttribute("FixedMcsUl", BooleanValue(params.useFixedMcs));
@@ -737,15 +726,15 @@ simulate_process(SimulationParameters params, std::ofstream* file)
         // Create the configuration for the CcBwpHelper
         CcBwpCreator::SimpleOperationBandConf bandConfig(bandInfo.centralFrequency,
                                                          bandInfo.gnbBandwidth,
-                                                         numCcPerBand,
-                                                         scenarioEnum);
+                                                         numCcPerBand);
 
         // Create operation band for the current gNB
         std::unique_ptr<OperationBandInfo> bandOb = std::make_unique<OperationBandInfo>(
             ccBwpCreator.CreateOperationBandContiguousCc(bandConfig));
 
-        // Initialize channel and pathloss, plus other things inside the band
-        nrHelper->InitializeOperationBand(bandOb.get());
+        // Create and assign the spectrum channels (propagation, fading and channel
+        // condition) of every BWP of this band
+        channelHelper->AssignChannelsToBands({std::ref(*bandOb)});
 
         // Create a separate BandwidthPartInfoPtrVector for each band
         BandwidthPartInfoPtrVector bandBwps;
@@ -830,17 +819,11 @@ simulate_process(SimulationParameters params, std::ofstream* file)
     {
         for (auto it = enbNetDevPerBand[i].Begin(); it != enbNetDevPerBand[i].End(); ++it)
         {
-            DynamicCast<NrGnbNetDevice>(*it)->UpdateConfig();
             // Convert the txPower from dBm to W
             nrHelper->GetGnbPhy(DynamicCast<NetDevice>(*it), 0)
                 ->SetTxPower(params.gnbs[gnbId].txPower);
             gnbId++;
         }
-    }
-
-    for (auto it = ueNetDev.Begin(); it != ueNetDev.End(); ++it)
-    {
-        DynamicCast<NrUeNetDevice>(*it)->UpdateConfig();
     }
 
     Ptr<Node> pgw = epcHelper->GetPgwNode();
@@ -886,7 +869,7 @@ simulate_process(SimulationParameters params, std::ofstream* file)
     }
     std::cout << "Band " << bandid << " Selected GNB: " << id << std::endl;
     std::cout << enbNetDevPerBand[bandid].Get(id)->GetChannel() << std::endl;
-    nrHelper->AttachToEnb(ueNetDev.Get(0), enbNetDevPerBand[bandid].Get(id));
+    nrHelper->AttachToGnb(ueNetDev.Get(0), enbNetDevPerBand[bandid].Get(id));
     double bitrate = params.bitRate;
 
     double packetsPerSecond = bitrate / (params.packetSize * 8);
@@ -1020,7 +1003,6 @@ main(int argc, char* argv[])
     cmd.AddValue("seed", "Random number generator seed", params.randomSeed);
     cmd.AddValue("nUEs", "The number of UEs in the environment.", params.nUEs);
     cmd.AddValue("int", "The sample time interval in microseconds.", params.timeInterval);
-    cmd.AddValue("packetSize", "The packet size in bytes.", params.packetSize);
     cmd.AddValue("fullBuffer",
                  "Provides enough bitrate to saturate the simulation.",
                  params.fullBuffer);
