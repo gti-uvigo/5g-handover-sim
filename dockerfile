@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:24.04
 
 # Install dependencies
 
@@ -16,6 +16,7 @@ RUN apt install -y \
         g++ \
         python3 \
         python3-pip\
+        python3-venv \
         cmake \
         ninja-build \
         git \
@@ -54,7 +55,6 @@ RUN apt install -y \
         libgsl-dev \
         libgslcblas0 \
         tcpdump \
-        sqlite \
         sqlite3 \
         libsqlite3-dev \
         libgtk-3-dev \
@@ -71,19 +71,24 @@ WORKDIR /app
 
 
 # Install Python dependencies
-RUN pip3 install --upgrade pip
-RUN pip3 install -r requirements.txt
+# Ubuntu 24.04 ships an externally managed Python (PEP 668), so the dependencies
+# are installed in a virtualenv that is put first in the PATH
+ENV VIRTUAL_ENV=/opt/venv
+RUN python3 -m venv $VIRTUAL_ENV
+ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+RUN pip install --upgrade pip
+RUN pip install -r requirements.txt
 
 # # clone the ns-3-dev repository
 RUN git clone https://gitlab.com/nsnam/ns-3-dev.git
-# checkout the specific version of ns-3-dev (3.41)
-RUN cd ns-3-dev && git checkout ns-3.41
+# checkout the specific version of ns-3-dev (3.48)
+RUN cd ns-3-dev && git checkout ns-3.48
 # change the working directory contrib/
 WORKDIR /app/ns-3-dev/contrib
 # Install 5G-LENA
 RUN git clone https://gitlab.com/cttc-lena/nr.git
-# checkout the specific version of 5G-LENA (5g-lena-v3.0.y)
-RUN cd nr && git checkout 5g-lena-v3.0.y
+# checkout the specific version of 5G-LENA (v5.1, compatible with ns-3.48)
+RUN cd nr && git checkout v5.1
 # create a symbolic link from /app/network-simulator to /app/ns-3-dev/scratch
 RUN ln -s /app/network-simulator /app/ns-3-dev/scratch/network-simulator
 
@@ -92,5 +97,9 @@ RUN ln -s /app/network-simulator /app/ns-3-dev/scratch/network-simulator
 WORKDIR /app/ns-3-dev
 
 # # compile ns-3
+# The 5G-LENA translation units are memory hungry, so the number of parallel
+# compilation jobs is limited to keep the build inside the Docker memory limit.
+# Raise it with --build-arg NS3_BUILD_JOBS=<n> if the Docker VM has more RAM.
+ARG NS3_BUILD_JOBS=4
 RUN ./ns3 configure --enable-examples --enable-tests -d optimized
-RUN ./ns3 build
+RUN ./ns3 build -j ${NS3_BUILD_JOBS}
