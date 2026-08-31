@@ -47,7 +47,7 @@ def apply_penalty(connected_gnb, penalty_dict, time, interval):
                     else:
                         penalty_value = penalty_dict[key] * (time / interval)
                         
-                    connected_gnb.loc[:, key] += penalty_value
+                    connected_gnb.loc[key] += penalty_value
 
     return connected_gnb
 

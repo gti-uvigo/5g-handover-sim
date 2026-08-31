@@ -13,9 +13,11 @@ from scoring import calculate_algorithm_score
 
 
 def weighted_avg(df, value_column, weight_column):
-    weighted_sum = (df[value_column] * df[weight_column])
-    weight_sum = df[weight_column]
-    return weighted_sum / weight_sum 
+    weighted_sum = (df[value_column] * df[weight_column]).sum()
+    weight_sum = df[weight_column].sum()
+    if weight_sum == 0:
+        return float("nan")
+    return weighted_sum / weight_sum
 
 os.environ["KERAS_BACKEND"] = "jax"
 ALGORITHM = "DDQN"
